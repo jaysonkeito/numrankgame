@@ -1,6 +1,9 @@
 // src/screens/RanksScreen.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View, Text, TouchableOpacity, ScrollView,
+  StyleSheet, ActivityIndicator,
+} from 'react-native';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
@@ -14,10 +17,12 @@ export default function RanksScreen() {
   const [lb,      setLb]      = useState<LBEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const pts  = user?.pts ?? 0;
-  const cur  = getRank(pts);
+  const pts = user?.pts ?? 0;
+  const cur = getRank(pts);
 
-  useEffect(() => { if (tab === 'lb') loadLB(); }, [tab]);
+  useEffect(() => {
+    if (tab === 'lb') loadLB();
+  }, [tab]);
 
   const loadLB = async () => {
     setLoading(true);
@@ -31,7 +36,9 @@ export default function RanksScreen() {
         pts:      d.data().pts ?? 0,
         rank:     d.data().rank ?? 'Beginner',
       })));
-    } catch (e) { console.error('[Ranks] loadLB:', e); }
+    } catch (e) {
+      console.error('[Ranks] loadLB:', e);
+    }
     setLoading(false);
   };
 
@@ -43,8 +50,14 @@ export default function RanksScreen() {
 
       <View style={s.tabRow}>
         {(['tiers', 'lb'] as const).map(t => (
-          <TouchableOpacity key={t} style={[s.tab, tab === t && s.tabOn]} onPress={() => setTab(t)}>
-            <Text style={[s.tabTxt, tab === t && s.tabTxtOn]}>{t === 'tiers' ? 'Tiers' : 'Leaderboard'}</Text>
+          <TouchableOpacity
+            key={t}
+            style={[s.tab, tab === t && s.tabOn]}
+            onPress={() => setTab(t)}
+          >
+            <Text style={[s.tabTxt, tab === t && s.tabTxtOn]}>
+              {t === 'tiers' ? 'Tiers' : 'Leaderboard'}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -65,9 +78,15 @@ export default function RanksScreen() {
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Text style={s.rankName}>{r.name}</Text>
-                  {isMe && <View style={s.youPill}><Text style={s.youPillT}>You</Text></View>}
+                  {isMe && (
+                    <View style={s.youPill}>
+                      <Text style={s.youPillT}>You</Text>
+                    </View>
+                  )}
                 </View>
-                <Text style={s.rankSub}>{r.scope} · {r.max === Infinity ? `${r.min}+` : `${r.min}–${r.max}`} pts</Text>
+                <Text style={s.rankSub}>
+                  {r.scope} · {r.max === Infinity ? `${r.min}+` : `${r.min}–${r.max}`} pts
+                </Text>
                 {isMe && (
                   <View style={s.progWrap}>
                     <View style={[s.progFill, { width: `${pct}%` as any }]} />
@@ -84,12 +103,16 @@ export default function RanksScreen() {
           loading
             ? <ActivityIndicator color={C.gold} style={{ marginTop: 40 }} />
             : lb.length === 0
-              ? <Text style={s.empty}>No players yet. Be the first!</Text>
+              ? <Text style={s.empty}>No players yet.</Text>
               : lb.map((p, i) => (
                 <View key={p.uid} style={[s.lbRow, p.uid === user?.uid && s.lbRowMe]}>
-                  <Text style={[s.lbPos, i < 3 && s.lbPosTop]}>{i < 3 ? medals[i] : i + 1}</Text>
-                  <View style={s.lbAv}><Text style={s.lbAvT}>{p.username.substring(0,2).toUpperCase()}</Text></View>
-                  <Text style={[s.lbName, p.uid === user?.uid && { fontWeight: '500' }]}>
+                  <Text style={[s.lbPos, i < 3 && s.lbPosTop]}>
+                    {i < 3 ? medals[i] : i + 1}
+                  </Text>
+                  <View style={s.lbAv}>
+                    <Text style={s.lbAvT}>{p.username.substring(0, 2).toUpperCase()}</Text>
+                  </View>
+                  <Text style={[s.lbName, p.uid === user?.uid && { fontWeight: '600' }]}>
                     {p.username}{p.uid === user?.uid ? ' (You)' : ''}
                   </Text>
                   <Text style={s.lbPts}>{p.pts}</Text>
@@ -119,7 +142,7 @@ const s = StyleSheet.create({
   rankIcon:   { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   rankName:   { fontSize: 15, fontWeight: '500', color: C.text },
   rankSub:    { fontSize: 12, color: C.text2, marginTop: 2 },
-  rankPts:    { fontSize: 14, fontWeight: '500', color: C.goldD },
+  rankPts:    { fontSize: 14, fontWeight: '600', color: C.goldD },
   youPill:    { backgroundColor: C.goldBg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   youPillT:   { fontSize: 10, color: C.goldD, fontWeight: '500' },
   progWrap:   { height: 5, backgroundColor: C.bg2, borderRadius: 20, marginTop: 6, overflow: 'hidden' },

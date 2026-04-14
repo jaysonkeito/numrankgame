@@ -1,9 +1,8 @@
 // src/screens/RegisterScreen.tsx
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
-  StyleSheet, KeyboardAvoidingView, Platform,
-  ScrollView, ActivityIndicator,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
@@ -41,7 +40,6 @@ export default function RegisterScreen({ navigation }: Props) {
     const err = await register(username.trim(), email.trim(), password);
     setLoading(false);
     if (err) { setError(err); return; }
-    // Show success screen instead of auto-login
     setSuccess(true);
   };
 
@@ -50,20 +48,17 @@ export default function RegisterScreen({ navigation }: Props) {
     return (
       <View style={s.successScreen}>
         <View style={s.successIcon}>
-          <Text style={s.successCheck}>✓</Text>
+          <Text style={{ fontSize: 36, color: C.green }}>✓</Text>
         </View>
         <Text style={s.successTitle}>Account created!</Text>
         <Text style={s.successSub}>
-          Your account has been registered successfully. Please log in to continue.
+          Registration successful. Please log in to start playing.
         </Text>
-        <View style={s.successIdBox}>
-          <Text style={s.successIdLabel}>Your Player ID has been generated</Text>
-          <Text style={s.successIdHint}>You can find it in your Profile after logging in.</Text>
+        <View style={s.successBox}>
+          <Text style={s.successBoxLbl}>Your 9-digit Player ID has been generated</Text>
+          <Text style={s.successBoxHint}>You can find it in your Profile after logging in.</Text>
         </View>
-        <TouchableOpacity
-          style={s.btn}
-          onPress={() => navigation.navigate('Login')}
-        >
+        <TouchableOpacity style={s.btn} onPress={() => navigation.navigate('Login')}>
           <Text style={s.btnTxt}>Go to Login</Text>
         </TouchableOpacity>
       </View>
@@ -72,7 +67,10 @@ export default function RegisterScreen({ navigation }: Props) {
 
   // ── Register form ───────────────────────────────────────────────────────────
   return (
-    <KeyboardAvoidingView style={s.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView
+      style={s.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
 
         <View style={s.logoWrap}>
@@ -81,11 +79,14 @@ export default function RegisterScreen({ navigation }: Props) {
         </View>
 
         <View style={s.card}>
-          <Text style={s.title}>Register</Text>
+          <Text style={s.cardTitle}>Register</Text>
 
+          {/* Username */}
           <Text style={s.label}>
             Username{' '}
-            <Text style={{ color: C.text3, fontWeight: '400' }}>(6–16 chars · letters, numbers, underscore)</Text>
+            <Text style={{ color: C.text3, fontWeight: '400' }}>
+              (6–16 chars · letters, numbers, underscore)
+            </Text>
           </Text>
           <TextInput
             style={[s.input, !!uErr && { borderColor: C.red }]}
@@ -102,6 +103,7 @@ export default function RegisterScreen({ navigation }: Props) {
             <Text style={[s.charCount, { color: charColor() }]}>{username.length}/{MAX}</Text>
           </View>
 
+          {/* Email */}
           <Text style={s.label}>Email</Text>
           <TextInput
             style={s.input}
@@ -113,6 +115,7 @@ export default function RegisterScreen({ navigation }: Props) {
             autoCapitalize="none"
           />
 
+          {/* Password */}
           <Text style={s.label}>
             Password{' '}
             <Text style={{ color: C.text3, fontWeight: '400' }}>(min 8 characters)</Text>
@@ -135,8 +138,11 @@ export default function RegisterScreen({ navigation }: Props) {
 
           {password.length > 0 && (
             <View style={s.strRow}>
-              {[1,2,3].map(i => (
-                <View key={i} style={[s.strBar, { backgroundColor: pStr >= i ? pCol : C.border }]} />
+              {[1, 2, 3].map(i => (
+                <View
+                  key={i}
+                  style={[s.strBar, { backgroundColor: pStr >= i ? pCol : C.border }]}
+                />
               ))}
               <Text style={[s.strLbl, { color: pCol }]}>{pLbl}</Text>
             </View>
@@ -146,11 +152,17 @@ export default function RegisterScreen({ navigation }: Props) {
 
           <View style={s.notice}>
             <Text style={s.noticeTxt}>
-              A unique <Text style={{ fontWeight: '500' }}>9-digit Player ID</Text> will be auto-generated after registration.
+              A unique{' '}
+              <Text style={{ fontWeight: '600' }}>9-digit Player ID</Text>
+              {' '}will be auto-generated after registration.
             </Text>
           </View>
 
-          <TouchableOpacity style={[s.btn, loading && s.btnOff]} onPress={submit} disabled={loading}>
+          <TouchableOpacity
+            style={[s.btn, loading && s.btnOff]}
+            onPress={submit}
+            disabled={loading}
+          >
             {loading
               ? <ActivityIndicator color={C.goldD} />
               : <Text style={s.btnTxt}>Create account</Text>
@@ -159,10 +171,15 @@ export default function RegisterScreen({ navigation }: Props) {
         </View>
 
         <View style={s.sepRow}>
-          <View style={s.line} /><Text style={s.sepTxt}>or</Text><View style={s.line} />
+          <View style={s.line} />
+          <Text style={s.sepTxt}>or</Text>
+          <View style={s.line} />
         </View>
 
-        <TouchableOpacity style={s.ghost} onPress={() => navigation.navigate('Login')}>
+        <TouchableOpacity
+          style={s.ghost}
+          onPress={() => navigation.navigate('Login')}
+        >
           <Text style={s.ghostTxt}>Already have an account? Log in</Text>
         </TouchableOpacity>
 
@@ -172,15 +189,13 @@ export default function RegisterScreen({ navigation }: Props) {
 }
 
 const s = StyleSheet.create({
-  flex:   { flex: 1, backgroundColor: C.bg },
-  scroll: { flexGrow: 1, padding: 24, justifyContent: 'center' },
-
+  flex:    { flex: 1, backgroundColor: C.bg },
+  scroll:  { flexGrow: 1, padding: 24, justifyContent: 'center' },
   logoWrap:{ alignItems: 'center', marginBottom: 28 },
-  logo:    { fontSize: 40, fontWeight: '600', color: C.goldD, letterSpacing: -1 },
+  logo:    { fontSize: 40, fontWeight: '700', color: C.goldD, letterSpacing: -1 },
   tagline: { fontSize: 13, color: C.text3, marginTop: 5 },
-
   card:    { borderRadius: 16, borderWidth: 0.5, borderColor: C.border, padding: 20, marginBottom: 16 },
-  title:   { fontSize: 18, fontWeight: '500', color: C.text, marginBottom: 20 },
+  cardTitle:{ fontSize: 18, fontWeight: '600', color: C.text, marginBottom: 20 },
   label:   { fontSize: 12, color: C.text2, marginBottom: 6 },
   input:   {
     borderWidth: 0.5, borderColor: C.border, borderRadius: 8,
@@ -199,8 +214,11 @@ const s = StyleSheet.create({
   err:      { fontSize: 12, color: C.redD, marginBottom: 12 },
   notice:   { backgroundColor: C.goldBg, borderRadius: 8, padding: 12, marginBottom: 14 },
   noticeTxt:{ fontSize: 12, color: C.goldD, lineHeight: 18 },
-  btn:      { backgroundColor: C.goldBg, borderWidth: 0.5, borderColor: C.gold, borderRadius: 8, paddingVertical: 13, alignItems: 'center' },
-  btnTxt:   { fontSize: 14, fontWeight: '500', color: C.goldD },
+  btn:      {
+    backgroundColor: C.goldBg, borderWidth: 0.5, borderColor: C.gold,
+    borderRadius: 8, paddingVertical: 13, alignItems: 'center',
+  },
+  btnTxt:   { fontSize: 14, fontWeight: '600', color: C.goldD },
   btnOff:   { opacity: 0.6 },
   sepRow:   { flexDirection: 'row', alignItems: 'center', marginVertical: 14 },
   line:     { flex: 1, height: 0.5, backgroundColor: C.border },
@@ -208,13 +226,12 @@ const s = StyleSheet.create({
   ghost:    { borderWidth: 0.5, borderColor: C.border, borderRadius: 8, paddingVertical: 13, alignItems: 'center' },
   ghostTxt: { fontSize: 14, color: C.text2 },
 
-  // Success screen
+  // Success
   successScreen: { flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center', padding: 32 },
   successIcon:   { width: 72, height: 72, borderRadius: 36, backgroundColor: C.greenBg, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  successCheck:  { fontSize: 36, color: C.green },
-  successTitle:  { fontSize: 24, fontWeight: '600', color: C.text, marginBottom: 10 },
+  successTitle:  { fontSize: 24, fontWeight: '700', color: C.text, marginBottom: 10 },
   successSub:    { fontSize: 14, color: C.text2, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
-  successIdBox:  { backgroundColor: C.goldBg, borderRadius: 12, padding: 16, width: '100%', marginBottom: 28 },
-  successIdLabel:{ fontSize: 13, fontWeight: '500', color: C.goldD, textAlign: 'center' },
-  successIdHint: { fontSize: 12, color: C.goldD, textAlign: 'center', marginTop: 4 },
+  successBox:    { backgroundColor: C.goldBg, borderRadius: 12, padding: 16, width: '100%', marginBottom: 28 },
+  successBoxLbl: { fontSize: 13, fontWeight: '600', color: C.goldD, textAlign: 'center' },
+  successBoxHint:{ fontSize: 12, color: C.goldD, textAlign: 'center', marginTop: 4 },
 });

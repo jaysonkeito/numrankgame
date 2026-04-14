@@ -20,14 +20,17 @@ interface SearchResult {
   pts: number; online: boolean; isFriend: boolean; isPending: boolean;
 }
 
-// Helper: get online status from RTDB once
 function getOnline(uid: string): Promise<boolean> {
   return new Promise(resolve =>
-    onValue(ref(rtdb, `presence/${uid}`), s => resolve(s.val()?.online ?? false), { onlyOnce: true })
+    onValue(
+      ref(rtdb, `presence/${uid}`),
+      s => resolve(s.val()?.online ?? false),
+      { onlyOnce: true },
+    )
   );
 }
 
-function chatId(a: string, b: string) { return [a, b].sort().join('_'); }
+function getChatId(a: string, b: string) { return [a, b].sort().join('_'); }
 
 export default function SocialScreen() {
   const { user, firebaseUser } = useAuth();
@@ -44,13 +47,13 @@ export default function SocialScreen() {
 
   const myUid = firebaseUser?.uid ?? '';
 
-  // ── Friends ───────────────────────────────────────────────────────────────
+  // Friends listener
   useEffect(() => {
     if (!myUid) return;
     return onSnapshot(collection(db, 'players', myUid, 'friends'), async snap => {
       const list = await Promise.all(
         snap.docs.map(async d => {
-          const data = d.data();
+          const data   = d.data();
           const online = await getOnline(data.uid);
           return { uid: data.uid, id: data.id, username: data.username, rank: data.rank, pts: data.pts, online } as FriendData;
         })
@@ -59,21 +62,22 @@ export default function SocialScreen() {
     });
   }, [myUid]);
 
-  // ── Requests ──────────────────────────────────────────────────────────────
+  // Requests listener
   useEffect(() => {
     if (!myUid) return;
-    return onSnapshot(collection(db, 'players', myUid, 'friendRequests'), snap =>
-      setRequests(snap.docs.map(d => ({ id: d.id, ...d.data() } as FriendRequest)))
+    return onSnapshot(
+      collection(db, 'players', myUid, 'friendRequests'),
+      snap => setRequests(snap.docs.map(d => ({ id: d.id, ...d.data() } as FriendRequest)))
     );
   }, [myUid]);
 
-  // ── Conversations ─────────────────────────────────────────────────────────
+  // Conversations listener
   useEffect(() => {
     if (!myUid) return;
     return onSnapshot(collection(db, 'players', myUid, 'conversations'), async snap => {
       const list = await Promise.all(
         snap.docs.map(async d => {
-          const data = d.data();
+          const data   = d.data();
           const online = await getOnline(data.withUid);
           return { withUid: data.withUid, withUsername: data.withUsername, lastMsg: data.lastMsg, lastTime: data.lastTime, online } as Conversation;
         })
@@ -83,7 +87,7 @@ export default function SocialScreen() {
     });
   }, [myUid]);
 
-  // ── Search ────────────────────────────────────────────────────────────────
+  // Search
   const search = useCallback(async (q: string) => {
     if (!q.trim() || !myUid) { setResults([]); return; }
     setSearching(true);
@@ -91,10 +95,8 @@ export default function SocialScreen() {
       const friendSet = new Set(friends.map(f => f.uid));
       let snap;
       if (/^\d{9}$/.test(q.trim())) {
-        // Search by exact 9-digit player ID
         snap = await getDocs(query(collection(db, 'players'), where('playerId', '==', q.trim())));
       } else {
-        // Search by username prefix
         snap = await getDocs(query(
           collection(db, 'players'),
           where('username', '>=', q),
@@ -118,7 +120,7 @@ export default function SocialScreen() {
     setSearching(false);
   }, [myUid, friends]);
 
-  // ── Send friend request ───────────────────────────────────────────────────
+  // Send friend request
   const sendRequest = async (toUid: string) => {
     if (!user || !myUid) return;
     await setDoc(doc(db, 'players', toUid, 'friendRequests', myUid), {
@@ -149,12 +151,12 @@ export default function SocialScreen() {
     await deleteDoc(doc(db, 'players', myUid, 'friendRequests', req.fromUid));
   };
 
-  // ── Open chat ─────────────────────────────────────────────────────────────
+  // Open chat
   const openChat = (uid: string, username: string, online: boolean) => {
     setChatWith({ uid, username, online });
     setChatInput('');
     const isFriend = friends.some(f => f.uid === uid);
-    const cid = chatId(myUid, uid);
+    const cid = getChatId(myUid, uid);
     const q = isFriend
       ? query(collection(db, 'chats', cid, 'messages'), orderBy('timestamp', 'asc'))
       : query(collection(db, 'chats', cid, 'messages'), orderBy('timestamp', 'asc'), where('visibleOffline', '==', true));
@@ -166,7 +168,7 @@ export default function SocialScreen() {
   const sendMessage = async () => {
     if (!chatWith || !chatInput.trim() || !user || !myUid) return;
     const text     = chatInput.trim();
-    const cid      = chatId(myUid, chatWith.uid);
+    const cid      = getChatId(myUid, chatWith.uid);
     const isFriend = friends.some(f => f.uid === chatWith.uid);
     setChatInput('');
     await addDoc(collection(db, 'chats', cid, 'messages'), {
@@ -193,7 +195,6 @@ export default function SocialScreen() {
     <View style={s.screen}>
       <View style={s.hdr}><Text style={s.title}>Social</Text></View>
 
-      {/* Tabs */}
       <View style={s.tabRow}>
         {tabs.map(t => (
           <TouchableOpacity key={t.id} style={[s.tab, tab === t.id && s.tabOn]} onPress={() => setTab(t.id)}>
@@ -211,7 +212,10 @@ export default function SocialScreen() {
             : friends.map(f => (
               <View key={f.uid} style={s.card}>
                 <View style={s.row}>
-                  <View style={s.rel}><View style={s.av}><Text style={s.avT}>{initials(f.username)}</Text></View><View style={[s.dot, f.online ? s.dotOn : s.dotOff]} /></View>
+                  <View style={s.rel}>
+                    <View style={s.av}><Text style={s.avT}>{initials(f.username)}</Text></View>
+                    <View style={[s.dot, f.online ? s.dotOn : s.dotOff]} />
+                  </View>
                   <View style={{ flex: 1 }}>
                     <Text style={s.pName}>{f.username}</Text>
                     <Text style={s.pSub}>{f.rank} · {f.pts} pts · <Text style={{ color: f.online ? C.green : C.text3 }}>{f.online ? 'Online' : 'Offline'}</Text></Text>
@@ -239,7 +243,10 @@ export default function SocialScreen() {
             {results.map(p => (
               <View key={p.uid} style={s.card}>
                 <View style={s.row}>
-                  <View style={s.rel}><View style={s.av}><Text style={s.avT}>{initials(p.username)}</Text></View><View style={[s.dot, p.online ? s.dotOn : s.dotOff]} /></View>
+                  <View style={s.rel}>
+                    <View style={s.av}><Text style={s.avT}>{initials(p.username)}</Text></View>
+                    <View style={[s.dot, p.online ? s.dotOn : s.dotOff]} />
+                  </View>
                   <View style={{ flex: 1 }}>
                     <Text style={s.pName}>{p.username}</Text>
                     <Text style={s.pSub}>{p.id} · {p.rank}</Text>
@@ -248,7 +255,9 @@ export default function SocialScreen() {
                     ? <View style={s.pillGreen}><Text style={s.pillGreenT}>Friends</Text></View>
                     : p.isPending
                       ? <View style={s.pillGold}><Text style={s.pillGoldT}>Pending</Text></View>
-                      : <TouchableOpacity style={s.btnSm} onPress={() => sendRequest(p.uid)}><Text style={s.btnSmT}>Add</Text></TouchableOpacity>
+                      : <TouchableOpacity style={s.btnSm} onPress={() => sendRequest(p.uid)}>
+                          <Text style={s.btnSmT}>Add</Text>
+                        </TouchableOpacity>
                   }
                 </View>
               </View>
@@ -263,7 +272,10 @@ export default function SocialScreen() {
             : convos.map(c => (
               <TouchableOpacity key={c.withUid} style={s.card} onPress={() => openChat(c.withUid, c.withUsername, c.online)}>
                 <View style={s.row}>
-                  <View style={s.rel}><View style={s.av}><Text style={s.avT}>{initials(c.withUsername)}</Text></View><View style={[s.dot, c.online ? s.dotOn : s.dotOff]} /></View>
+                  <View style={s.rel}>
+                    <View style={s.av}><Text style={s.avT}>{initials(c.withUsername)}</Text></View>
+                    <View style={[s.dot, c.online ? s.dotOn : s.dotOff]} />
+                  </View>
                   <View style={{ flex: 1 }}>
                     <Text style={s.pName}>{c.withUsername}</Text>
                     <Text style={s.pSub} numberOfLines={1}>{c.lastMsg}</Text>
@@ -286,8 +298,12 @@ export default function SocialScreen() {
                     <Text style={s.pSub}>{r.fromId} · {r.fromRank}</Text>
                   </View>
                   <View style={{ flexDirection: 'row', gap: 6 }}>
-                    <TouchableOpacity style={[s.btnSm, s.btnGreen]} onPress={() => acceptRequest(r)}><Text style={[s.btnSmT, { color: C.greenD }]}>Accept</Text></TouchableOpacity>
-                    <TouchableOpacity style={s.btnSm} onPress={() => declineRequest(r)}><Text style={s.btnSmT}>Decline</Text></TouchableOpacity>
+                    <TouchableOpacity style={[s.btnSm, s.btnGreen]} onPress={() => acceptRequest(r)}>
+                      <Text style={[s.btnSmT, { color: C.greenD }]}>Accept</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={s.btnSm} onPress={() => declineRequest(r)}>
+                      <Text style={s.btnSmT}>Decline</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
@@ -300,16 +316,26 @@ export default function SocialScreen() {
       <Modal visible={!!chatWith} animationType="slide" presentationStyle="pageSheet">
         <View style={s.chatScreen}>
           <View style={s.chatHdr}>
-            <View style={s.rel}><View style={s.av}><Text style={s.avT}>{chatWith ? initials(chatWith.username) : ''}</Text></View><View style={[s.dot, chatWith?.online ? s.dotOn : s.dotOff]} /></View>
+            <View style={s.rel}>
+              <View style={s.av}><Text style={s.avT}>{chatWith ? initials(chatWith.username) : ''}</Text></View>
+              <View style={[s.dot, chatWith?.online ? s.dotOn : s.dotOff]} />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={s.pName}>{chatWith?.username}</Text>
-              <Text style={s.pSub}>{chatWith?.online ? 'Online' : 'Offline'} · {friends.some(f => f.uid === chatWith?.uid) ? 'Friend' : 'Not friends'}</Text>
+              <Text style={s.pSub}>
+                {chatWith?.online ? 'Online' : 'Offline'} ·{' '}
+                {friends.some(f => f.uid === chatWith?.uid) ? 'Friend' : 'Not friends'}
+              </Text>
             </View>
-            <TouchableOpacity style={s.btnSm} onPress={() => setChatWith(null)}><Text style={s.btnSmT}>Close</Text></TouchableOpacity>
+            <TouchableOpacity style={s.btnSm} onPress={() => setChatWith(null)}>
+              <Text style={s.btnSmT}>Close</Text>
+            </TouchableOpacity>
           </View>
 
           {!friends.some(f => f.uid === chatWith?.uid) && !chatWith?.online && (
-            <View style={s.notice}><Text style={s.noticeTxt}>Player is offline. Messages only visible when they are online.</Text></View>
+            <View style={s.notice}>
+              <Text style={s.noticeTxt}>Player is offline. Messages only visible when they are online.</Text>
+            </View>
           )}
 
           <FlatList
@@ -354,11 +380,11 @@ const s = StyleSheet.create({
   title:  { fontSize: 20, fontWeight: '500', color: C.text },
   empty:  { textAlign: 'center', color: C.text3, marginTop: 40, fontSize: 14 },
 
-  tabRow: { flexDirection: 'row', borderWidth: 0.5, borderColor: C.border, borderRadius: 8, overflow: 'hidden', marginBottom: 14 },
-  tab:    { flex: 1, paddingVertical: 8, alignItems: 'center', paddingHorizontal: 2 },
-  tabOn:  { backgroundColor: C.bg2 },
-  tabTxt: { fontSize: 11, color: C.text2 },
-  tabTxtOn:{ color: C.text, fontWeight: '500' },
+  tabRow:   { flexDirection: 'row', borderWidth: 0.5, borderColor: C.border, borderRadius: 8, overflow: 'hidden', marginBottom: 14 },
+  tab:      { flex: 1, paddingVertical: 8, alignItems: 'center', paddingHorizontal: 2 },
+  tabOn:    { backgroundColor: C.bg2 },
+  tabTxt:   { fontSize: 11, color: C.text2 },
+  tabTxtOn: { color: C.text, fontWeight: '500' },
 
   card: { borderWidth: 0.5, borderColor: C.border, borderRadius: 12, padding: 14, marginBottom: 8 },
   row:  { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -366,15 +392,14 @@ const s = StyleSheet.create({
   av:   { width: 32, height: 32, borderRadius: 16, backgroundColor: C.goldBg, alignItems: 'center', justifyContent: 'center' },
   avT:  { fontSize: 12, fontWeight: '500', color: C.goldD },
   dot:  { width: 9, height: 9, borderRadius: 5, borderWidth: 1.5, borderColor: C.bg, position: 'absolute', bottom: 0, right: 0 },
-  dotOn:{ backgroundColor: C.green },
-  dotOff:{ backgroundColor: C.border },
+  dotOn:  { backgroundColor: C.green },
+  dotOff: { backgroundColor: C.border },
+  pName:  { fontSize: 14, fontWeight: '500', color: C.text },
+  pSub:   { fontSize: 12, color: C.text2 },
 
-  pName: { fontSize: 14, fontWeight: '500', color: C.text },
-  pSub:  { fontSize: 12, color: C.text2 },
-
-  btnSm:  { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 0.5, borderColor: C.border },
+  btnSm:   { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 0.5, borderColor: C.border },
   btnGreen:{ borderColor: C.green, backgroundColor: C.greenBg },
-  btnSmT: { fontSize: 12, color: C.text },
+  btnSmT:  { fontSize: 12, color: C.text },
 
   pillGold:  { backgroundColor: C.goldBg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   pillGoldT: { fontSize: 11, color: C.goldD, fontWeight: '500' },

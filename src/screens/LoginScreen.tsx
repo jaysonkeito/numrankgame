@@ -1,9 +1,8 @@
 // src/screens/LoginScreen.tsx
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
-  StyleSheet, KeyboardAvoidingView, Platform,
-  ScrollView, ActivityIndicator,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
@@ -25,11 +24,13 @@ export default function LoginScreen({ navigation }: Props) {
     const err = await login(email.trim(), password);
     setLoading(false);
     if (err) setError(err);
-    // On success AuthContext sets user → AppNavigator switches to MainTabs
   };
 
   return (
-    <KeyboardAvoidingView style={s.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView
+      style={s.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
 
         <View style={s.logoWrap}>
@@ -38,7 +39,7 @@ export default function LoginScreen({ navigation }: Props) {
         </View>
 
         <View style={s.card}>
-          <Text style={s.title}>Log in</Text>
+          <Text style={s.cardTitle}>Log in</Text>
 
           <Text style={s.label}>Email</Text>
           <TextInput
@@ -85,7 +86,9 @@ export default function LoginScreen({ navigation }: Props) {
         </View>
 
         <View style={s.sepRow}>
-          <View style={s.line} /><Text style={s.sepTxt}>or</Text><View style={s.line} />
+          <View style={s.line} />
+          <Text style={s.sepTxt}>or</Text>
+          <View style={s.line} />
         </View>
 
         <TouchableOpacity
@@ -101,32 +104,32 @@ export default function LoginScreen({ navigation }: Props) {
 }
 
 const s = StyleSheet.create({
-  flex:    { flex: 1, backgroundColor: C.bg },
-  scroll:  { flexGrow: 1, padding: 24, justifyContent: 'center' },
-  logoWrap:{ alignItems: 'center', marginBottom: 32 },
-  logo:    { fontSize: 40, fontWeight: '600', color: C.goldD, letterSpacing: -1 },
-  tagline: { fontSize: 13, color: C.text3, marginTop: 5 },
-  card:    { borderRadius: 16, borderWidth: 0.5, borderColor: C.border, padding: 20, marginBottom: 16 },
-  title:   { fontSize: 18, fontWeight: '500', color: C.text, marginBottom: 20 },
-  label:   { fontSize: 12, color: C.text2, marginBottom: 6 },
-  input:   {
+  flex:     { flex: 1, backgroundColor: C.bg },
+  scroll:   { flexGrow: 1, padding: 24, justifyContent: 'center' },
+  logoWrap: { alignItems: 'center', marginBottom: 32 },
+  logo:     { fontSize: 40, fontWeight: '700', color: C.goldD, letterSpacing: -1 },
+  tagline:  { fontSize: 13, color: C.text3, marginTop: 5 },
+  card:     { borderRadius: 16, borderWidth: 0.5, borderColor: C.border, padding: 20, marginBottom: 16 },
+  cardTitle:{ fontSize: 18, fontWeight: '600', color: C.text, marginBottom: 20 },
+  label:    { fontSize: 12, color: C.text2, marginBottom: 6 },
+  input:    {
     borderWidth: 0.5, borderColor: C.border, borderRadius: 8,
     paddingHorizontal: 12, paddingVertical: 11,
     fontSize: 14, color: C.text, marginBottom: 14,
   },
-  passWrap:{ position: 'relative', marginBottom: 14 },
-  eyeBtn:  { position: 'absolute', right: 12, top: 11 },
-  eyeTxt:  { fontSize: 12, color: C.info },
-  err:     { fontSize: 12, color: C.redD, marginBottom: 12 },
-  btn:     {
+  passWrap: { position: 'relative', marginBottom: 14 },
+  eyeBtn:   { position: 'absolute', right: 12, top: 11 },
+  eyeTxt:   { fontSize: 12, color: C.info },
+  err:      { fontSize: 12, color: C.redD, marginBottom: 12 },
+  btn:      {
     backgroundColor: C.goldBg, borderWidth: 0.5, borderColor: C.gold,
     borderRadius: 8, paddingVertical: 13, alignItems: 'center', marginTop: 4,
   },
-  btnTxt:  { fontSize: 14, fontWeight: '500', color: C.goldD },
-  btnOff:  { opacity: 0.6 },
-  sepRow:  { flexDirection: 'row', alignItems: 'center', marginVertical: 14 },
-  line:    { flex: 1, height: 0.5, backgroundColor: C.border },
-  sepTxt:  { fontSize: 12, color: C.text3, marginHorizontal: 12 },
-  ghost:   { borderWidth: 0.5, borderColor: C.border, borderRadius: 8, paddingVertical: 13, alignItems: 'center' },
-  ghostTxt:{ fontSize: 14, color: C.text2 },
+  btnTxt:   { fontSize: 14, fontWeight: '600', color: C.goldD },
+  btnOff:   { opacity: 0.6 },
+  sepRow:   { flexDirection: 'row', alignItems: 'center', marginVertical: 14 },
+  line:     { flex: 1, height: 0.5, backgroundColor: C.border },
+  sepTxt:   { fontSize: 12, color: C.text3, marginHorizontal: 12 },
+  ghost:    { borderWidth: 0.5, borderColor: C.border, borderRadius: 8, paddingVertical: 13, alignItems: 'center' },
+  ghostTxt: { fontSize: 14, color: C.text2 },
 });

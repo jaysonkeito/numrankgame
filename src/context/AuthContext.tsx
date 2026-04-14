@@ -27,8 +27,7 @@ interface Ctx {
 
 const AuthContext = createContext<Ctx | null>(null);
 
-// Separate flag: track whether we are in a "just registered" state
-// so we do NOT auto-login after createUserWithEmailAndPassword
+// Prevents auto-login immediately after registration
 let justRegistered = false;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -39,12 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser && !justRegistered) {
-        // Normal login - load profile and set user
         setFirebaseUser(fbUser);
         await loadProfile(fbUser.uid);
         setupPresence(fbUser.uid);
       } else if (fbUser && justRegistered) {
-        // Just registered - sign out immediately, force manual login
         justRegistered = false;
         await signOut(auth);
         setFirebaseUser(null);
@@ -114,11 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!email.includes('@')) return 'Enter a valid email address.';
     if (password.length < 8)  return 'Password must be at least 8 characters.';
     try {
-      justRegistered = true; // prevent auto-login
+      justRegistered = true;
       const cred     = await createUserWithEmailAndPassword(auth, email.trim(), password);
       const uid      = cred.user.uid;
       const playerId = generatePlayerId();
-
       await setDoc(doc(db, 'players', uid), {
         uid, playerId,
         username:  username.trim(),

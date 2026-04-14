@@ -17,8 +17,7 @@ import ProfileScreen  from '../screens/ProfileScreen';
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();
 
-// Simple text-based tab icons (no extra icon library needed)
-const TAB_ICONS: Record<string, string> = {
+const ICONS: Record<string, string> = {
   Play: '▶', Social: '👥', Ranks: '☰', Profile: '○',
 };
 
@@ -40,7 +39,7 @@ function MainTabs() {
         tabBarLabelStyle:        { fontSize: 11 },
         tabBarIcon: ({ focused }) => (
           <Text style={{ fontSize: 16, color: focused ? C.goldD : C.text3 }}>
-            {TAB_ICONS[route.name] ?? '•'}
+            {ICONS[route.name] ?? '•'}
           </Text>
         ),
       })}
@@ -91,6 +90,6 @@ export default function AppNavigator() {
 
 const s = StyleSheet.create({
   splash: { flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center' },
-  logo:   { fontSize: 44, fontWeight: '600', color: C.goldD, letterSpacing: -1 },
+  logo:   { fontSize: 44, fontWeight: '700', color: C.goldD, letterSpacing: -1 },
   sub:    { fontSize: 14, color: C.text3, marginTop: 6 },
 });

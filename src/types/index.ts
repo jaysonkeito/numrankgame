@@ -15,7 +15,7 @@ export interface RankTier {
 
 export interface Player {
   uid:       string;
-  id:        string;   // 9-digit unique player ID
+  id:        string;
   username:  string;
   email:     string;
   pts:       number;
@@ -59,7 +59,6 @@ export interface FriendRequest {
   fromPts:      number;
 }
 
-// ── Rank tiers ────────────────────────────────────────────────────────────────
 export const RANKS: RankTier[] = [
   { name: 'Beginner', scope: 'Barangay', icon: '🌱', min: 0,    max: 49   },
   { name: 'Junior',   scope: 'City',     icon: '🏙️', min: 50,   max: 199  },
@@ -68,7 +67,6 @@ export const RANKS: RankTier[] = [
   { name: 'Global',   scope: 'World',    icon: '🌏', min: 1000, max: Infinity },
 ];
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
 export const C = {
   gold:    '#EF9F27',
   goldD:   '#BA7517',
@@ -88,7 +86,6 @@ export const C = {
   info:    '#378ADD',
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 export function getRank(pts: number): RankTier {
   return RANKS.find(r => pts >= r.min && pts <= r.max) ?? RANKS[0];
 }
